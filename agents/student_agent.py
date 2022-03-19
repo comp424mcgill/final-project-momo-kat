@@ -13,14 +13,15 @@ tree_depth = 3
 root = None
 
 class GameState():
-    def __init__(self, chess_board, my_pos, adv_pos, turn, depth, parent=None):
+    def __init__(self, chess_board, p0_pos, p1_pos, turn, depth, parent=None):
         self.board = chess_board
-        self.my_pos = my_pos
-        self.adv_pos = adv_pos
+        self.p0_pos = p0_pos
+        self.p1_pos = p1_pos
         self.turn = turn
         self.children = []
         self.parent = parent
         self.depth = depth
+        self.isLeaf = False
         self.eval = None
     
     def evaluate_state(self):
@@ -30,6 +31,8 @@ class GameState():
         self.eval = 0
 
 def set_barrier(c_board, r, c, dir):
+    """
+    """
     board = deepcopy(c_board)
     # Set the barrier to True
     board[r, c, dir] = True
@@ -38,42 +41,51 @@ def set_barrier(c_board, r, c, dir):
     board[r + move[0], c + move[1], opposites[dir]] = True
     return board
 
+def add_walls_to_position(state, r, c, my_pos, adv_pos):
+    """
+    """
+    depth_reached = False
+    for d in range(4):
+        if state.board[r,c,d]:
+            continue
+        new_board = set_barrier(state.board, r, c, d)
+        
+        if (state.turn == 0):
+            p0, p1 = my_pos, adv_pos
+        else:
+            p0, p1 = adv_pos, my_pos
+        
+        new_state = GameState(new_board, p0, p1, 1-state.turn, state.depth + 1, state)
+        
+        state.children.append(new_state)
+
+        new_state.parent = state
+
+        if (new_state.depth == tree_depth):
+            new_state.isLeaf = True
+            depth_reached = True
+
+    return depth_reached
+
 def get_next_states(state):
+    """
+    """
     global max_steps, moves, tree_depth
     if (state.turn == 0):
-        my_pos = state.my_pos
-        adv_pos = state.adv_pos
+        my_pos = state.p0_pos
+        adv_pos = state.p1_pos
     else:
-        my_pos = state.adv_pos
-        adv_pos = state.my_pos
-
-    depth_reached = False
+        my_pos = state.p1_pos
+        adv_pos = state.p0_pos
 
     state_queue = [(my_pos, 0)]
     visited = {tuple(my_pos)}
-    walled_states = []
 
-    while state_queue:
+    depth_reached = add_walls_to_position(state, my_pos[0], my_pos[1], my_pos, adv_pos)
+
+    while state_queue and not depth_reached:
         cur_pos, cur_step = state_queue.pop()
         r, c = cur_pos
-        if cur_step == 0:
-            for d in range(4):
-                if state.board[r,c,d]:
-                    continue
-                new_board = set_barrier(state.board, my_pos[0], my_pos[1], d)
-                
-                if (state.turn == 0):
-                    new_state = GameState(new_board, my_pos, adv_pos, 1-state.turn, state.depth + 1, state)
-                else:
-                    new_state = GameState(new_board, adv_pos, my_pos, 1-state.turn, state.depth + 1, state)
-                
-                state.children.append(new_state)
-
-                new_state.parent = state
-
-                if (new_state.depth == tree_depth):
-                    new_state.evaluate_state()
-                    depth_reached = True
 
         if cur_step == max_steps:
             break
@@ -88,25 +100,7 @@ def get_next_states(state):
             visited.add(tuple(next_pos))
             state_queue.append((next_pos, cur_step + 1))
 
-            for d in range(4):
-                if state.board[next_pos[0], next_pos[1], d]:
-                    continue
-                walled_states.append((next_pos[0], next_pos[1], d))
-
-                new_board = set_barrier(state.board, next_pos[0], next_pos[1], d)
-                
-                if (state.turn == 0):
-                    new_state = GameState(new_board, next_pos, adv_pos, 1-state.turn, state.depth + 1, state)
-                else:
-                    new_state = GameState(new_board, adv_pos, next_pos, 1-state.turn, state.depth + 1, state)
-                
-                state.children.append(new_state)
-
-                new_state.parent = state
-
-                if (new_state.depth == tree_depth):
-                    new_state.evaluate_state()
-                    depth_reached = True
+            depth_reached = add_walls_to_position(state, next_pos[0], next_pos[1], my_pos, adv_pos)
 
     return state.children, depth_reached
 
