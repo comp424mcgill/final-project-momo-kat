@@ -14,11 +14,11 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--player_1", type=str, default="student_agent")
     parser.add_argument("--player_2", type=str, default="student_agent")
-    parser.add_argument("--board_size", type=int, default=6)
+    parser.add_argument("--board_size", type=int, default=2)
     parser.add_argument(
         "--board_size_min",
         type=int,
-        default=6,
+        default=2,
         help="In autoplay mode, the minimum board size",
     )
     parser.add_argument(
