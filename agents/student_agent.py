@@ -28,7 +28,37 @@ class GameState():
         """
         Uses a heuristic to evaluate the current state of the board.
         """
+        ##prioritze distance closer to the center of the board
+        
+        ##prioritize fewer number of moves that opposit player has
+
+        ## prioritize walls in the direction of the opposing player.. unless losing?
+
+        ## prioritize moves that are close to the opponent max steps. (otherwise they can 360 around you)
+
+        ##keep track of closed areas so the "center" of the board might change
+
+        ## def need a way to keep track of walls that are close to finishing, but maybe not if heuristic is good and depth is good too
+
         self.eval = 0
+        ##method called on a game, always assume it's the player's turn to start with
+    def minimax(self):
+        if self.depth==0 or self.isLeaf==True :
+            return self.evaluate_state(self)
+        if self.turn==0: ##our turn
+            self.eval=-100000 #-inf
+            for child in self.children :
+                self.eval= max(self.eval, self.minimax(child))
+            return self.eval
+        else ##min player
+            self.eval=100000
+            for child in self.children :
+                self.eval= min(self.eval, self.minimax(child))
+            return self.eval
+        return 0
+
+
+
 
 def set_barrier(c_board, r, c, dir):
     """
@@ -120,6 +150,8 @@ class StudentAgent(Agent):
             "d": 2,
             "l": 3,
         }
+    
+    
 
     def step(self, chess_board, my_pos, adv_pos, max_step):
         """
@@ -156,6 +188,13 @@ class StudentAgent(Agent):
                 for s in new_states:
                     state_queue.append(s)
 
-        # dummy return
-        return my_pos, self.dir_map["u"]
+        root.minimax(root)
+        for child in root.children:
+            if child.eval == root.eval:
+            ## this is the best move
+                ## look where we put the wall in that game state, chose that wall to put
+                for i in range(4):
+                    if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
+                        return child.p0_pos, i
+        #return my_pos, self.dir_map["u"]
 
