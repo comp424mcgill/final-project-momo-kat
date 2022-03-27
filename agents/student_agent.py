@@ -13,6 +13,8 @@ tree_depth = 3
 root = None
 
 class GameState():
+    """
+    """
     def __init__(self, chess_board, p0_pos, p1_pos, turn, depth, parent=None):
         self.board = chess_board
         self.p0_pos = p0_pos
@@ -29,6 +31,53 @@ class GameState():
         Uses a heuristic to evaluate the current state of the board.
         """
         self.eval = 0
+
+    def check_endgame(self):
+        """
+        Check if the game ends and compute the current score of the agents.
+
+        Returns
+        -------
+        is_endgame : bool
+            Whether the game ends.
+        player_1_score : int
+            The score of player 1.
+        player_2_score : int
+            The score of player 2.
+        """
+        # Union-Find
+        board_size = len(self.board)
+        father = dict()
+        for r in range(board_size):
+            for c in range(board_size):
+                father[(r, c)] = (r, c)
+
+        def find(pos):
+            if father[pos] != pos:
+                father[pos] = find(father[pos])
+            return father[pos]
+
+        def union(pos1, pos2):
+            father[pos1] = pos2
+
+        for r in range(board_size):
+            for c in range(board_size):
+                for dir, move in enumerate(
+                    moves[1:3]
+                ):  # Only check down and right
+                    if self.board[r, c, dir + 1]:
+                        continue
+                    pos_a = find((r, c))
+                    pos_b = find((r + move[0], c + move[1]))
+                    if pos_a != pos_b:
+                        union(pos_a, pos_b)
+
+        for r in range(board_size):
+            for c in range(self.board_size):
+                find((r, c))
+        p0_r = find(tuple(self.p0_pos))
+        p1_r = find(tuple(self.p1_pos))
+        return p0_r != p1_r
 
 def set_barrier(c_board, r, c, dir):
     """
@@ -55,7 +104,7 @@ def add_walls_to_position(state, r, c, my_pos, adv_pos):
         else:
             p0, p1 = adv_pos, my_pos
         
-        new_state = GameState(new_board, p0, p1, 1-state.turn, state.depth + 1, state)
+        new_state = GameState(new_board, deepcopy(p0), deepcopy(p1), 1-state.turn, state.depth + 1, state)
         
         state.children.append(new_state)
 
@@ -154,7 +203,8 @@ class StudentAgent(Agent):
                 break
             else:
                 for s in new_states:
-                    state_queue.append(s)
+                    if (not s.check_endgame()):
+                        state_queue.append(s)
 
         # dummy return
         return my_pos, self.dir_map["u"]
