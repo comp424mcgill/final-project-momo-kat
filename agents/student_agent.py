@@ -203,7 +203,9 @@ class StudentAgent(Agent):
                 break
             else:
                 for s in new_states:
-                    if (not s.check_endgame()):
+                    if (s.check_endgame()):
+                        s.isLeaf = True
+                    else:
                         state_queue.append(s)
 
         # dummy return
