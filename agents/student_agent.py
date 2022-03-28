@@ -79,7 +79,7 @@ class GameState():
                         union(pos_a, pos_b)
 
         for r in range(board_size):
-            for c in range(self.board_size):
+            for c in range(board_size):
                 find((r, c))
         p0_r = find(tuple(self.p0_pos))
         p1_r = find(tuple(self.p1_pos))
