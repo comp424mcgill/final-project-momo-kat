@@ -24,13 +24,19 @@ class GameState():
         self.parent = parent
         self.depth = depth
         self.isLeaf = False
+        self.isTerminal = False
         self.eval = None
     
     def evaluate_state(self):
         """
         Uses a heuristic to evaluate the current state of the board.
         """
-        self.eval = 0
+        if (self.isTerminal):
+            # do not calculate a heuristic, get the actual score
+            pass    # TODO remove after implementation
+        else:
+            # use heuristic
+            self.eval = 0
 
     def check_endgame(self):
         """
@@ -205,6 +211,7 @@ class StudentAgent(Agent):
                 for s in new_states:
                     if (s.check_endgame()):
                         s.isLeaf = True
+
                     else:
                         state_queue.append(s)
 
