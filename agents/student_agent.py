@@ -211,7 +211,7 @@ class StudentAgent(Agent):
                 for s in new_states:
                     if (s.check_endgame()):
                         s.isLeaf = True
-
+                        s.isTerminal = True
                     else:
                         state_queue.append(s)
 
