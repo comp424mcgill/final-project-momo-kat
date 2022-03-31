@@ -3,7 +3,6 @@ from copy import deepcopy
 from agents.agent import Agent
 from store import register_agent
 import numpy as np
-import sys
 
 moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
@@ -12,9 +11,11 @@ max_steps = 0
 tree_depth = 3
 root = None
 
-class GameState():
+
+class GameState:
     """
     """
+
     def __init__(self, chess_board, p0_pos, p1_pos, turn, depth, parent=None):
         self.board = chess_board
         self.p0_pos = p0_pos
@@ -26,105 +27,100 @@ class GameState():
         self.isLeaf = False
         self.isTerminal = False
         self.eval = None
-    
+
     def evaluate_state(self):
         """
         Uses a heuristic to evaluate the current state of the board.
         """
-        if (self.isTerminal):
+        if self.isTerminal:
             # do not calculate a heuristic, get the actual score
-            
-            #if it is a terminal state then maybe we didn't reach this from our move, check who's turn it is and check if we won
-            self.eval=-100 ##assume it's our loss move for now
+
+            # if it is a terminal state then maybe we didn't reach this from our move, check who's turn it is and
+            # check if we won
+            self.eval = -100  # assume it's our loss move for now
         else:
             # use heuristic
             self.eval = 0
 
-        ##prioritze distance closer to the center of the board
-        #current position =
-        #center of board =
-        #ouptput a high number if we are close to center board
-        #if we know there's a wall, the 'center' of the board should change
-        #keep track of closed areas so the "center" of the board might change
-        
-        ##prioritize fewer number of moves that opposit player has
-        #calculate how many moves can the opposit player do from this position
+        # prioritize distance closer to the center of the board
+        # current position =
+        # center of board =
+        # output a high number if we are close to center board
+        # if we know there's a wall, the 'center' of the board should change
+        # keep track of closed areas so the "center" of the board might change
 
-        ## prioritize walls in the direction of the opposing player.. unless losing?
-        #check if there's a wall between you and the opponent
+        # prioritize fewer number of moves that opposite player has
+        # calculated how many moves can the opposite player do from this position
 
-        ## prioritize moves that are close to the opponent max steps. (otherwise they can 360 around you)
-        #.. to see
+        # prioritize walls in the direction of the opposing player... unless losing?
+        # check if there's a wall between you and the opponent
 
+        # prioritize moves that are close to the opponent max steps. (otherwise they can go 360 around you)
+        # to see
 
-    ##method called on a game, always assume it's the player's turn to start with
+    # method called on a game, always assume it's the player's turn to start with
     def minimax(self) -> int:
-        
-        if self.depth==tree_depth or self.isLeaf==True :
+
+        if self.depth == tree_depth or self.isLeaf:
             self.evaluate_state()
-          #  print("value of depth ",tree_depth,": ",self.eval)
+            #  print("value of depth ",tree_depth,": ",self.eval)
             return self.eval
 
-        elif self.turn==0: ##our turn
-            self.eval=-100000 #-inf
-            for child in self.children :
-                self.eval= max(self.eval, child.minimax())
+        elif self.turn == 0:  # our turn
+            self.eval = -100000  # -inf
+            for child in self.children:
+                self.eval = max(self.eval, child.minimax())
             #    print("Max: value of depth ",self.depth,": ",max(self.eval, child.minimax()))
 
             return self.eval
-        else : ##min player
-            self.eval=100000
-            for child in self.children :
-                self.eval= min(self.eval, child.minimax())
-             #   print("Min: value of depth ",self.depth,": ",max(self.eval, child.minimax()))
+        else:  # min player
+            self.eval = 100000
+            for child in self.children:
+                self.eval = min(self.eval, child.minimax())
+            #   print("Min: value of depth ",self.depth,": ",max(self.eval, child.minimax()))
 
             return self.eval
 
-    #displays the values of the tree by height    
+    # displays the values of the tree by height
     def traverse(self):
-        thislevel = [self]
-        h=0
-        print("level ",h)
-       
-        while thislevel:
-            nextlevel = list()
-            for n in thislevel:
-                print (n.eval, end = " ")
-                nextlevel = nextlevel  + n.children
-            h=h+1
-            print()
-            print("level ",h)
-            thislevel = nextlevel
+        this_level = [self]
+        h = 0
+        print("level ", h)
 
-    ##displayes the values of the tree by height. It also indicates which nodes belong to wich parent
-    def traverseChildren(self):
-        thislevel = [[self]]
-        h=0
-        print("level ",h)
-        
-        while thislevel:
-            nextlevel = []
-            i=0
-            for l in thislevel:
-                print(i,":",end=" ")
-                for n in l:
-                    print (n.eval, end = " ")
-                    nextlevel.append(n.children)
-                i=i+1
-
-            h=h+1
+        while this_level:
+            next_level = list()
+            for n in this_level:
+                print(n.eval, end=" ")
+                next_level = next_level + n.children
+            h = h + 1
             print()
-            if(h>tree_depth):
+            print("level ", h)
+            this_level = next_level
+
+    # displays the values of the tree by height. It also indicates which nodes belong to which parent
+    def traverse_children(self):
+        this_level = [[self]]
+        h = 0
+        print("level ", h)
+
+        while this_level:
+            next_level = []
+            i = 0
+            for item in this_level:
+                print(i, ":", end=" ")
+                for n in item:
+                    print(n.eval, end=" ")
+                    next_level.append(n.children)
+                print("\n")
+                i = i + 1
+
+            h = h + 1
+            print()
+            if h > tree_depth:
                 return
-            print("level ",h)
-            
-            thislevel = nextlevel
-        
+            print("level ", h)
 
-
-
-
-        
+            this_level = next_level
 
     def check_endgame(self):
         """
@@ -156,10 +152,10 @@ class GameState():
 
         for r in range(board_size):
             for c in range(board_size):
-                for dir, move in enumerate(
-                    moves[1:3]
+                for direction, move in enumerate(
+                        moves[1:3]
                 ):  # Only check down and right
-                    if self.board[r, c, dir + 1]:
+                    if self.board[r, c, direction + 1]:
                         continue
                     pos_a = find((r, c))
                     pos_b = find((r + move[0], c + move[1]))
@@ -174,48 +170,50 @@ class GameState():
         return p0_r != p1_r
 
 
-def set_barrier(c_board, r, c, dir):
+def set_barrier(c_board, r, c, direction):
     """
     """
     board = deepcopy(c_board)
     # Set the barrier to True
-    board[r, c, dir] = True
+    board[r, c, direction] = True
     # Set the opposite barrier to True
-    move = moves[dir]
-    board[r + move[0], c + move[1], opposites[dir]] = True
+    move = moves[direction]
+    board[r + move[0], c + move[1], opposites[direction]] = True
     return board
+
 
 def add_walls_to_position(state, r, c, my_pos, adv_pos):
     """
     """
     depth_reached = False
+    states = []
     for d in range(4):
-        if state.board[r,c,d]:
+        if state.board[r, c, d]:
             continue
         new_board = set_barrier(state.board, r, c, d)
-        
-        if (state.turn == 0):
+
+        if state.turn == 0:
             p0, p1 = my_pos, adv_pos
         else:
             p0, p1 = adv_pos, my_pos
-        
-        new_state = GameState(new_board, deepcopy(p0), deepcopy(p1), 1-state.turn, state.depth + 1, state)
-        
-        state.children.append(new_state)
+
+        new_state = GameState(new_board, deepcopy(p0), deepcopy(p1), 1 - state.turn, state.depth + 1, state)
 
         new_state.parent = state
 
-        if (new_state.depth == tree_depth):
-            new_state.isLeaf = True
+        if new_state.depth >= tree_depth:
             depth_reached = True
+        states.append(new_state)
 
-    return depth_reached
+    return depth_reached, states
+
 
 def get_next_states(state):
     """
     """
     global max_steps, moves, tree_depth
-    if (state.turn == 0):
+    next_states = []
+    if state.turn == 0:
         my_pos = state.p0_pos
         adv_pos = state.p1_pos
     else:
@@ -225,7 +223,9 @@ def get_next_states(state):
     state_queue = [(my_pos, 0)]
     visited = {tuple(my_pos)}
 
-    depth_reached = add_walls_to_position(state, my_pos[0], my_pos[1], my_pos, adv_pos)
+    depth_reached, these_next_states = add_walls_to_position(state, my_pos[0], my_pos[1], my_pos, adv_pos)
+
+    next_states.extend(these_next_states)
 
     while state_queue and not depth_reached:
         cur_pos, cur_step = state_queue.pop()
@@ -234,8 +234,8 @@ def get_next_states(state):
         if cur_step == max_steps:
             break
 
-        for dir, move in enumerate(moves):
-            if state.board[r, c, dir]:
+        for direction, move in enumerate(moves):
+            if state.board[r, c, direction]:
                 continue
             next_pos = (cur_pos[0] + move[0], cur_pos[1] + move[1])
             if np.array_equal(next_pos, adv_pos) or tuple(next_pos) in visited:
@@ -244,9 +244,11 @@ def get_next_states(state):
             visited.add(tuple(next_pos))
             state_queue.append((next_pos, cur_step + 1))
 
-            depth_reached = add_walls_to_position(state, next_pos[0], next_pos[1], my_pos, adv_pos)
+            depth_reached, those_next_states = add_walls_to_position(state, next_pos[0], next_pos[1], my_pos, adv_pos)
 
-    return state.children, depth_reached
+            next_states.extend(those_next_states)
+    return next_states
+
 
 @register_agent("student_agent")
 class StudentAgent(Agent):
@@ -264,8 +266,6 @@ class StudentAgent(Agent):
             "d": 2,
             "l": 3,
         }
-    
-    
 
     def step(self, chess_board, my_pos, adv_pos, max_step):
         """
@@ -290,35 +290,35 @@ class StudentAgent(Agent):
         adv_pos_copy = deepcopy(adv_pos)
 
         root = GameState(cb_copy, my_pos_copy, adv_pos_copy, 0, 0)
-        depth_reached = False
         state_queue = [root]
 
         while state_queue:
             curr = state_queue.pop()
-            new_states, depth_reached = get_next_states(curr)
-            if (depth_reached):
-                break
-            else:
-                for s in new_states:
-                    if (s.check_endgame()):
+            new_states = get_next_states(curr)
+            curr.children = new_states
+            for s in new_states:
+                if s.check_endgame():
+                    s.isLeaf = True
+                    s.isTerminal = True
+                else:
+                    state_queue.append(s)
+                    if s.depth == tree_depth:
                         s.isLeaf = True
-                        s.isTerminal = True
-                    else:
-                        state_queue.append(s)
-        
-        print();print('state of tree before minimix... ')
-        root.traverseChildren()
-        print();print("calculating ...",end="")
+
+        print()
+        print('state of tree before minimax... ')
+        root.traverse_children()
+        print()
+        print("calculating ...", end="")
         root.minimax()
-        root.traverseChildren() ##will show the tree after minimax
-        print('state of tree before minimix... ')
-
-        for child in root.children:
-            if child.eval == root.eval:
-            ## this is the best move
-                ## look where we put the wall in that game state, chose that wall to put
-                for i in range(4):
-                    if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
-                        return child.p0_pos, i
-        #return my_pos, self.dir_map["u"]
-
+        root.traverse_children()  # will show the tree after minimax
+        print('state of tree before minimax... ')
+        #
+        # for child in root.children:
+        #     if child.eval == root.eval:
+        #     ## this is the best move
+        #         ## look where we put the wall in that game state, chose that wall to put
+        #         for i in range(4):
+        #             if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
+        #                 return child.p0_pos, i
+        return my_pos, self.dir_map["u"]

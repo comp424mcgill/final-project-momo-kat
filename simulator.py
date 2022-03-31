@@ -14,7 +14,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--player_1", type=str, default="student_agent")
     parser.add_argument("--player_2", type=str, default="student_agent")
-    parser.add_argument("--board_size", type=int, default=2)
+    parser.add_argument("--board_size", type=int, default=5)
     parser.add_argument(
         "--board_size_min",
         type=int,
