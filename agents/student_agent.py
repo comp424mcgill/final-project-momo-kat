@@ -33,38 +33,92 @@ class GameState():
         """
         if (self.isTerminal):
             # do not calculate a heuristic, get the actual score
-            pass    # TODO remove after implementation
+            
+            #if it is a terminal state then maybe we didn't reach this from our move, check who's turn it is and check if we won
+            self.eval=-100 ##assume it's our loss move for now
         else:
             # use heuristic
             self.eval = 0
 
         ##prioritze distance closer to the center of the board
+        #current position =
+        #center of board =
+        #ouptput a high number if we are close to center board
+        #if we know there's a wall, the 'center' of the board should change
+        #keep track of closed areas so the "center" of the board might change
         
         ##prioritize fewer number of moves that opposit player has
+        #calculate how many moves can the opposit player do from this position
 
         ## prioritize walls in the direction of the opposing player.. unless losing?
+        #check if there's a wall between you and the opponent
 
         ## prioritize moves that are close to the opponent max steps. (otherwise they can 360 around you)
-
-        ##keep track of closed areas so the "center" of the board might change
-
-        ## def need a way to keep track of walls that are close to finishing, but maybe not if heuristic is good and depth is good too
+        #.. to see
 
 
-        ##method called on a game, always assume it's the player's turn to start with
-    def minimax(self):
-        if self.depth==0 or self.isLeaf==True :
-            return self.evaluate_state(self)
-        if self.turn==0: ##our turn
+    ##method called on a game, always assume it's the player's turn to start with
+    def minimax(self) -> int:
+        
+        if self.depth==tree_depth or self.isLeaf==True :
+            self.evaluate_state()
+          #  print("value of depth ",tree_depth,": ",self.eval)
+            return self.eval
+
+        elif self.turn==0: ##our turn
             self.eval=-100000 #-inf
             for child in self.children :
-                self.eval= max(self.eval, self.minimax(child))
+                self.eval= max(self.eval, child.minimax())
+            #    print("Max: value of depth ",self.depth,": ",max(self.eval, child.minimax()))
+
             return self.eval
         else : ##min player
             self.eval=100000
             for child in self.children :
-                self.eval= min(self.eval, self.minimax(child))
+                self.eval= min(self.eval, child.minimax())
+             #   print("Min: value of depth ",self.depth,": ",max(self.eval, child.minimax()))
+
             return self.eval
+
+    #displays the values of the tree by height    
+    def traverse(self):
+        thislevel = [self]
+        h=0
+        print("level ",h)
+       
+        while thislevel:
+            nextlevel = list()
+            for n in thislevel:
+                print (n.eval, end = " ")
+                nextlevel = nextlevel  + n.children
+            h=h+1
+            print()
+            print("level ",h)
+            thislevel = nextlevel
+
+    ##displayes the values of the tree by height. It also indicates which nodes belong to wich parent
+    def traverseChildren(self):
+        thislevel = [[self]]
+        h=0
+        print("level ",h)
+        
+        while thislevel:
+            nextlevel = []
+            i=0
+            for l in thislevel:
+                print(i,":",end=" ")
+                for n in l:
+                    print (n.eval, end = " ")
+                    nextlevel.append(n.children)
+                i=i+1
+
+            h=h+1
+            print()
+            if(h>tree_depth):
+                return
+            print("level ",h)
+            
+            thislevel = nextlevel
         
 
 
@@ -251,8 +305,14 @@ class StudentAgent(Agent):
                         s.isTerminal = True
                     else:
                         state_queue.append(s)
+        
+        print();print('state of tree before minimix... ')
+        root.traverseChildren()
+        print();print("calculating ...",end="")
+        root.minimax()
+        root.traverseChildren() ##will show the tree after minimax
+        print('state of tree before minimix... ')
 
-        root.minimax(root)
         for child in root.children:
             if child.eval == root.eval:
             ## this is the best move
