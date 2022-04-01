@@ -8,7 +8,7 @@ moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
 opposites = {0: 2, 1: 3, 2: 0, 3: 1}
 max_steps = 0
-tree_depth = 3
+tree_depth = 2
 root = None
 
 
@@ -42,12 +42,16 @@ class GameState:
             # use heuristic
             self.eval = 0
 
+        
+        ###param1: prioritize distances close to center
+        xCenterDistance,yCenterDistance= self.distanceToCenter()
         # prioritize distance closer to the center of the board
-        # current position =
-        # center of board =
-        # output a high number if we are close to center board
+        param1=-(xCenterDistance+yCenterDistance)
+
         # if we know there's a wall, the 'center' of the board should change
         # keep track of closed areas so the "center" of the board might change
+
+
 
         # prioritize fewer number of moves that opposite player has
         # calculated how many moves can the opposite player do from this position
@@ -58,7 +62,54 @@ class GameState:
         # prioritize moves that are close to the opponent max steps. (otherwise they can go 360 around you)
         # to see
 
-    # method called on a game, always assume it's the player's turn to start with
+    ##indicates by how much we won the game
+    ## TODO
+    def score(self):
+        end,p0_score,p1_score=self.check_endgame()
+        return p0_score-p1_score
+
+
+    
+    #return a tuple ( x, y) where x,y represents the absolute distance with respect the center in x and in y.
+    # ex: for 5x5 board and pos (2,1) we will return (abs(3-2),abs(3-1))
+    def distanceToCenter(self)-> tuple:
+        boardx,boardy, _ = self.board.shape
+        
+        ##TODO: check where our position actually is
+
+        mex,mey= self.p0_pos
+        mex=mex+1;mey=mey+1 
+
+        if (boardx % 2) == 0:
+            ##in the case of even number, the board has 4 centers
+            #find closest center:
+            if mex > boardx/2:
+                boardxCenter=boardx/2+1 
+            else:
+                boardxCenter=boardx/2
+
+            if mey > boardy/2:
+                boardyCenter=boardx/2+1 
+            else:
+                boardyCenter=boardx/2
+
+
+            xDist=(mex)-(boardxCenter) #check x distance with respect to xCenter
+            yDist=(mey)-(boardyCenter) #check y distance with respect to yCenter
+            
+        else:
+            xDist=(mex)-(boardx/2 + 1) #check x distance with respect to xCenter
+            yDist=(mey)-(boardy/2 + 1) #check y distance with respect to yCenter
+
+        return (abs(xDist),abs(yDist))
+
+    ##calculates how many moves the opposit player has
+    ##TODO
+    def oppenentMoves(self)-> int:
+        boardx,boardy, _ = self.board.shape
+            
+        return 0
+
     def minimax(self) -> int:
 
         if self.depth == tree_depth or self.isLeaf:
@@ -167,7 +218,9 @@ class GameState:
                 find((r, c))
         p0_r = find(tuple(self.p0_pos))
         p1_r = find(tuple(self.p1_pos))
-        return p0_r != p1_r
+        p0_score = list(father.values()).count(p0_r)
+        p1_score = list(father.values()).count(p1_r)
+        return p0_r != p1_r,p0_score,p1_score
 
 
 def set_barrier(c_board, r, c, direction):
@@ -297,7 +350,8 @@ class StudentAgent(Agent):
             new_states = get_next_states(curr)
             curr.children = new_states
             for s in new_states:
-                if s.check_endgame():
+                endGame,_,_=s.check_endgame()
+                if endGame:
                     s.isLeaf = True
                     s.isTerminal = True
                 else:
