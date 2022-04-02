@@ -365,13 +365,13 @@ class StudentAgent(Agent):
         print("calculating ...", end="")
         root.minimax()
         root.traverse_children()  # will show the tree after minimax
-        print('state of tree before minimax... ')
+        print('state of tree after minimax... ')
         
-        for child in root.children:
-            if child.eval == root.eval:
-            ## this is the best move
-                ## look where we put the wall in that game state, chose that wall to put
-                for i in range(4):
-                    if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
-                        return child.p0_pos, i
-        return my_pos, self.dir_map["u"]
+        # for child in root.children:
+        #     if child.eval == root.eval:
+        #     ## this is the best move
+        #         ## look where we put the wall in that game state, chose that wall to put
+        #         for i in range(4):
+        #             if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
+        #                 return child.p0_pos, i
+        # return my_pos, self.dir_map["u"]
