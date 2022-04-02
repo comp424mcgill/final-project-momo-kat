@@ -374,4 +374,4 @@ class StudentAgent(Agent):
         #         for i in range(4):
         #             if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
         #                 return child.p0_pos, i
-        # return my_pos, self.dir_map["u"]
+        return my_pos, self.dir_map["u"]
