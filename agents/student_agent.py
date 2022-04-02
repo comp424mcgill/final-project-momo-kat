@@ -8,7 +8,7 @@ moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
 opposites = {0: 2, 1: 3, 2: 0, 3: 1}
 max_steps = 0
-tree_depth = 2
+tree_depth = 3
 root = None
 
 
@@ -157,8 +157,9 @@ class GameState:
         while this_level:
             next_level = []
             i = 0
+            print(len(this_level), " nodes on this level\n")
             for item in this_level:
-                print(i, ":", end=" ")
+                print(i, ":", ", ", len(item), end=" \n")
                 for n in item:
                     print(n.eval, end=" ")
                     next_level.append(n.children)
@@ -238,7 +239,6 @@ def set_barrier(c_board, r, c, direction):
 def add_walls_to_position(state, r, c, my_pos, adv_pos):
     """
     """
-    depth_reached = False
     states = []
     for d in range(4):
         if state.board[r, c, d]:
@@ -254,11 +254,10 @@ def add_walls_to_position(state, r, c, my_pos, adv_pos):
 
         new_state.parent = state
 
-        if new_state.depth >= tree_depth:
-            depth_reached = True
-        states.append(new_state)
+        if new_state.depth <= tree_depth:
+            states.append(new_state)
 
-    return depth_reached, states
+    return states
 
 
 def get_next_states(state):
@@ -276,11 +275,11 @@ def get_next_states(state):
     state_queue = [(my_pos, 0)]
     visited = {tuple(my_pos)}
 
-    depth_reached, these_next_states = add_walls_to_position(state, my_pos[0], my_pos[1], my_pos, adv_pos)
+    these_next_states = add_walls_to_position(state, my_pos[0], my_pos[1], my_pos, adv_pos)
 
     next_states.extend(these_next_states)
 
-    while state_queue and not depth_reached:
+    while state_queue:
         cur_pos, cur_step = state_queue.pop()
         r, c = cur_pos
 
@@ -297,7 +296,7 @@ def get_next_states(state):
             visited.add(tuple(next_pos))
             state_queue.append((next_pos, cur_step + 1))
 
-            depth_reached, those_next_states = add_walls_to_position(state, next_pos[0], next_pos[1], my_pos, adv_pos)
+            those_next_states = add_walls_to_position(state, next_pos[0], next_pos[1], my_pos, adv_pos)
 
             next_states.extend(those_next_states)
     return next_states
@@ -348,16 +347,16 @@ class StudentAgent(Agent):
         while state_queue:
             curr = state_queue.pop()
             new_states = get_next_states(curr)
-            curr.children = new_states
             for s in new_states:
+                curr.children.append(s)
                 endGame,_,_=s.check_endgame()
                 if endGame:
                     s.isLeaf = True
                     s.isTerminal = True
+                elif s.depth == tree_depth:
+                    s.isLeaf = True
                 else:
                     state_queue.append(s)
-                    if s.depth == tree_depth:
-                        s.isLeaf = True
 
         print()
         print('state of tree before minimax... ')
@@ -367,12 +366,12 @@ class StudentAgent(Agent):
         root.minimax()
         root.traverse_children()  # will show the tree after minimax
         print('state of tree before minimax... ')
-        #
-        # for child in root.children:
-        #     if child.eval == root.eval:
-        #     ## this is the best move
-        #         ## look where we put the wall in that game state, chose that wall to put
-        #         for i in range(4):
-        #             if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
-        #                 return child.p0_pos, i
+        
+        for child in root.children:
+            if child.eval == root.eval:
+            ## this is the best move
+                ## look where we put the wall in that game state, chose that wall to put
+                for i in range(4):
+                    if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
+                        return child.p0_pos, i
         return my_pos, self.dir_map["u"]
