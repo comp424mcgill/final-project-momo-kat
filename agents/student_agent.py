@@ -8,7 +8,7 @@ moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
 opposites = {0: 2, 1: 3, 2: 0, 3: 1}
 max_steps = 0
-tree_depth = 3
+tree_depth = 1
 root = None
 
 
@@ -150,6 +150,7 @@ class GameState:
 
     # displays the values of the tree by height. It also indicates which nodes belong to which parent
     def traverse_children(self):
+        debug=True
         this_level = [[self]]
         h = 0
         print("level ", h)
@@ -157,9 +158,13 @@ class GameState:
         while this_level:
             next_level = []
             i = 0
-            print(len(this_level), " nodes on this level\n")
+            if debug:
+                nodesinThisLevel=0
+                for item in this_level:
+                    nodesinThisLevel=nodesinThisLevel+len(item)
+                print(nodesinThisLevel, " nodes on this level\n")
             for item in this_level:
-                print(i, ":", ", ", len(item), end=" \n")
+                print(i, ": ", len(item), end=" \n")
                 for n in item:
                     print(n.eval, end=" ")
                     next_level.append(n.children)
@@ -358,20 +363,25 @@ class StudentAgent(Agent):
                 else:
                     state_queue.append(s)
 
-        print()
-        print('state of tree before minimax... ')
-        root.traverse_children()
-        print()
-        print("calculating ...", end="")
+        print("Turn: ",0," Our position is: ",my_pos_copy)
+        # print()
+        # print('state of tree before minimax... ')
+        # root.traverse_children()
+        # print()
+        # print("calculating ...", end="")
         root.minimax()
         root.traverse_children()  # will show the tree after minimax
-        print('state of tree after minimax... ')
+        # print('state of tree after minimax... ')
         
-        # for child in root.children:
-        #     if child.eval == root.eval:
-        #     ## this is the best move
-        #         ## look where we put the wall in that game state, chose that wall to put
-        #         for i in range(4):
-        #             if(root.board[child.p0_pos[0][child.p0_pos[1]][i]]!=child.board[child.p0_pos[0][child.p0_pos[1]][i]]):
-        #                 return child.p0_pos, i
-        return my_pos, self.dir_map["u"]
+        for child in root.children:
+            if child.eval == root.eval:
+            ## this is the best move
+                print("found the move")
+                ## look where we put the wall in that game state, chose that wall to put
+                for i in range(4):
+                    if(root.board[child.p0_pos[0],child.p0_pos[1],i]!=child.board[child.p0_pos[0],child.p0_pos[1],i]):
+                        print("returned: ",child.p0_pos, i)
+                        return child.p0_pos, i
+
+   
+        # return my_pos, self.dir_map["u"]
