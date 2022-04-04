@@ -301,7 +301,7 @@ def get_next_states(state):
             visited.add(tuple(next_pos))
             state_queue.append((next_pos, cur_step + 1))
 
-            those_next_states = add_walls_to_position(state, next_pos[0], next_pos[1], my_pos, adv_pos)
+            those_next_states = add_walls_to_position(state, next_pos[0], next_pos[1], next_pos, adv_pos)
 
             next_states.extend(those_next_states)
     return next_states
