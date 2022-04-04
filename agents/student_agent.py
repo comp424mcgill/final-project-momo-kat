@@ -354,10 +354,12 @@ class StudentAgent(Agent):
             new_states = get_next_states(curr)
             for s in new_states:
                 curr.children.append(s)
-                endGame,_,_=s.check_endgame()
+                endGame,p0s,p1s=s.check_endgame()
                 if endGame:
                     s.isLeaf = True
                     s.isTerminal = True
+                    s.p0s=p0s
+                    s.p1s=p1s
                 elif s.depth == tree_depth:
                     s.isLeaf = True
                 else:
@@ -370,7 +372,7 @@ class StudentAgent(Agent):
         # print()
         # print("calculating ...", end="")
         root.minimax()
-        root.traverse_children()  # will show the tree after minimax
+        #root.traverse_children()  # will show the tree after minimax
         # print('state of tree after minimax... ')
         
         for child in root.children:
@@ -379,6 +381,8 @@ class StudentAgent(Agent):
                 print("found the move")
                 ## look where we put the wall in that game state, chose that wall to put
                 for i in range(4):
+                    print(root.board[child.p0_pos[0],child.p0_pos[1],i],child.board[child.p0_pos[0],child.p0_pos[1],i])
+
                     if(root.board[child.p0_pos[0],child.p0_pos[1],i]!=child.board[child.p0_pos[0],child.p0_pos[1],i]):
                         print("returned: ",child.p0_pos, i)
                         return child.p0_pos, i
