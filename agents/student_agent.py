@@ -8,7 +8,7 @@ moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
 opposites = {0: 2, 1: 3, 2: 0, 3: 1}
 max_steps = 0
-tree_depth = 1
+tree_depth = 3
 root = None
 
 
@@ -26,6 +26,8 @@ class GameState:
         self.depth = depth
         self.isLeaf = False
         self.isTerminal = False
+        self.p0s = None
+        self.p1s= None
         self.eval = None
 
     def evaluate_state(self):
@@ -37,30 +39,34 @@ class GameState:
 
             # if it is a terminal state then maybe we didn't reach this from our move, check who's turn it is and
             # check if we won
-            self.eval = -100  # assume it's our loss move for now
+            score= self.p0s-self.p1s #the bigger the gap the better
+
+            self.eval = score *100  # assume it's our loss move for now
         else:
-            # use heuristic
-            self.eval = 0
+           
 
-        
-        ###param1: prioritize distances close to center
-        xCenterDistance,yCenterDistance= self.distanceToCenter()
-        # prioritize distance closer to the center of the board
-        param1=-(xCenterDistance+yCenterDistance)
+            
+            ###param1: prioritize distances close to center
+            xCenterDistance,yCenterDistance= self.distanceToCenter()
+            # prioritize distance closer to the center of the board
+            param1=-(xCenterDistance+yCenterDistance)
 
-        # if we know there's a wall, the 'center' of the board should change
-        # keep track of closed areas so the "center" of the board might change
-
+            # if we know there's a wall, the 'center' of the board should change
+            # keep track of closed areas so the "center" of the board might change
 
 
-        # prioritize fewer number of moves that opposite player has
-        # calculated how many moves can the opposite player do from this position
 
-        # prioritize walls in the direction of the opposing player... unless losing?
-        # check if there's a wall between you and the opponent
+            # prioritize fewer number of moves that opposite player has
+            # calculated how many moves can the opposite player do from this position
 
-        # prioritize moves that are close to the opponent max steps. (otherwise they can go 360 around you)
-        # to see
+            # prioritize walls in the direction of the opposing player... unless losing?
+            # check if there's a wall between you and the opponent
+
+            # prioritize moves that are close to the opponent max steps. (otherwise they can go 360 around you)
+            # to see
+
+             # use heuristic
+            self.eval = param1*5
 
     ##indicates by how much we won the game
     ## TODO
