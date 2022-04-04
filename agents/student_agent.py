@@ -35,54 +35,50 @@ class GameState:
         Uses a heuristic to evaluate the current state of the board.
         """
         if self.isTerminal:
-            # do not calculate a heuristic, get the actual score
-
-            # if it is a terminal state then maybe we didn't reach this from our move, check who's turn it is and
-            # check if we won
+            
             score= self.p0s-self.p1s #the bigger the gap the better
 
-            self.eval = score *100  # assume it's our loss move for now
+            self.eval = score *1000  # assume it's our loss move for now
         else:
            
 
             
             ###param1: prioritize distances close to center
-            xCenterDistance,yCenterDistance= self.distanceToCenter()
-            # prioritize distance closer to the center of the board
-            param1=-(xCenterDistance+yCenterDistance)
+            
+            param1=self.distanceToCenter()
 
             # if we know there's a wall, the 'center' of the board should change
             # keep track of closed areas so the "center" of the board might change
 
 
+            ##param2: number of moves for us or opposing player
+            param2= self.oppenentMoves()
+            if self.depth%2==0:
+                ## then the opponent just played their move we should have a high number indicating our choices of move
+                param2=param2
+            else:
+                #then we just played, opponent should have a low number, so prioritize small numbers
+                param2=-param2
 
-            # prioritize fewer number of moves that opposite player has
-            # calculated how many moves can the opposite player do from this position
-
-            # prioritize walls in the direction of the opposing player... unless losing?
-            # check if there's a wall between you and the opponent
-
-            # prioritize moves that are close to the opponent max steps. (otherwise they can go 360 around you)
-            # to see
-
-             # use heuristic
-            self.eval = param1*5
-
-    ##indicates by how much we won the game
-    ## TODO
-    def score(self):
-        end,p0_score,p1_score=self.check_endgame()
-        return p0_score-p1_score
-
+             # use heuristic parameter optimizations:
+            self.eval = param1*5 + param2*5
 
     
     #return a tuple ( x, y) where x,y represents the absolute distance with respect the center in x and in y.
     # ex: for 5x5 board and pos (2,1) we will return (abs(3-2),abs(3-1))
     def distanceToCenter(self)-> tuple:
-        boardx,boardy, _ = self.board.shape
         
-        ##TODO: check where our position actually is
+        boardx,boardy, _ = self.board.shape
+        #for normalization, check what is the maximum distance from center in this case
+        
+        if (boardx % 2) == 0:
+            maxDistance = (boardx/2 -1 )*2 
+        else:
+            maxDistance = int(boardx/2) * 2
+        
+        
 
+        #our positoin
         mex,mey= self.p0_pos
         mex=mex+1;mey=mey+1 
 
@@ -107,14 +103,28 @@ class GameState:
             xDist=(mex)-(boardx/2 + 1) #check x distance with respect to xCenter
             yDist=(mey)-(boardy/2 + 1) #check y distance with respect to yCenter
 
-        return (abs(xDist),abs(yDist))
+        xCenterDistance,yCenterDistance =(abs(xDist),abs(yDist))
+        param1=-(xCenterDistance+yCenterDistance)
+        param1=param1/maxDistance  ## for example if distance to center is 5 and maxdistance is 10 we returned -0.5
 
-    ##calculates how many moves the opposit player has
-    ##TODO
+        return param1
+
     def oppenentMoves(self)-> int:
+        
+        ##for normalization: check what is normally considered to be the maximum number of moves in this checkboard size
         boardx,boardy, _ = self.board.shape
-            
-        return 0
+        stepSize= (boardx + 1) // 2
+        maxMoves=0
+        if boardx %2==0:
+            maxMoves= stepSize*stepSize + ((stepSize+1)*(stepSize+1)) ##counting the diagonals in the area 
+            maxMoves=maxMoves-2 #since the board is even
+            maxMoves=maxMoves*4 #4 choices per side of the board
+        else:
+            maxMoves= stepSize*stepSize + ((stepSize+1)*(stepSize+1)) ##counting the diagonals in the area 
+            maxMoves=maxMoves-4 #since the board is odd
+            maxMoves=maxMoves*4 #4 choices per side of the board
+
+        return len(get_next_states(self))/maxMoves
 
     def minimax(self) -> int:
 
