@@ -3,14 +3,83 @@ from copy import deepcopy
 from agents.agent import Agent
 from store import register_agent
 import numpy as np
+import colorama
+from colorama import Fore
 
 moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
 opposites = {0: 2, 1: 3, 2: 0, 3: 1}
 max_steps = 0
-tree_depth = 3
+tree_depth = 2
+currentMove = 0
+counterForUs=0
 root = None
+import time
 
+def setupTreeDepth(chess_board):
+    boardSize,_, _ = chess_board.shape
+    global tree_depth
+    global currentMove
+    global counterForUs
+    playingAgainstUs=False ## set to true if you are playing against yourself, aka studentagent v studentagent
+    if playingAgainstUs:
+        
+        if counterForUs ==1 :
+            if currentMove!=0:currentMove-=1
+            counterForUs=0
+        elif currentMove!=0:
+            counterForUs+=1
+        
+    if boardSize==4:
+        if currentMove < 3: #first  moves 
+            tree_depth=3
+        elif currentMove < 4: #third move
+            tree_depth=4
+        elif currentMove < 5: #4th move
+            tree_depth=5
+        else:
+            tree_depth=6
+    
+    elif boardSize==5:
+        if currentMove <1:
+            tree_depth=2
+        elif currentMove < 8: #first 8 moves 
+            tree_depth=3
+        else:
+            tree_depth=4
+    
+    elif boardSize==6:
+        if currentMove < 5:
+            tree_depth=2
+        else:
+            tree_depth=3
+    
+    elif boardSize==7:
+        if currentMove < 15: #first  moves 
+            tree_depth=2
+        else: #else
+            tree_depth=3
+        
+    elif boardSize==8:
+        if currentMove < 25: #first  moves 
+            tree_depth=2
+        else: #else
+            tree_depth=3
+    
+    elif boardSize==9:
+        if currentMove < 40: #first  moves 
+            tree_depth=2
+        else: #else
+            tree_depth=3
+    elif boardSize==10:
+        if currentMove < 10:
+            tree_depth=1
+        elif currentMove < 75: #first  moves 
+            tree_depth=2
+        else: #else
+            tree_depth=3
+    currentMove=currentMove+1
+    
 
 class GameState:
     """
@@ -40,28 +109,20 @@ class GameState:
 
             self.eval = score *1000  # assume it's our loss move for now
         else:
-           
 
-            
-            ###param1: prioritize distances close to center
-            
+            ###param1: prioritize distances close to center 
             param1=self.distanceToCenter()
 
-            # if we know there's a wall, the 'center' of the board should change
-            # keep track of closed areas so the "center" of the board might change
-
-
-            ##param2: number of moves for us or opposing player
-            param2= self.oppenentMoves()
-            if self.depth%2==0:
-                ## then the opponent just played their move we should have a high number indicating our choices of move
-                param2=param2
-            else:
-                #then we just played, opponent should have a low number, so prioritize small numbers
-                param2=-param2
-
+            # param2: number of moves for us or opposing player
+            # param2= self.oppenentMoves()
+            # if self.depth%2==0:
+            #     ## then the opponent just played their move we should have a high number indicating our choices of move
+            #     param2=param2
+            # else:
+            #     #then we just played, opponent should have a low number, so prioritize small numbers
+            #     param2=-param2
              # use heuristic parameter optimizations:
-            self.eval = param1*5 + param2*5
+            self.eval =  param1*5
 
     
     #return a tuple ( x, y) where x,y represents the absolute distance with respect the center in x and in y.
@@ -192,15 +253,11 @@ class GameState:
             if h > tree_depth:
                 return
             print("level ", h)
-
             this_level = next_level
 
     def check_endgame(self):
         """
-        Check if the game ends and compute the current score of the agents.
-
-        Returns
-        -------
+        returns:
         is_endgame : bool
             Whether the game ends.
         player_1_score : int
@@ -244,6 +301,30 @@ class GameState:
         p1_score = list(father.values()).count(p1_r)
         return p0_r != p1_r,p0_score,p1_score
 
+    #resets current move if start of game
+    def check_startgame(self):
+        global currentMove
+        totalWalls= 0
+        board_size ,_, _ = self.board.shape
+        for r in range(board_size):
+            for c in range(board_size):
+                for direction in range(4):
+                    if self.board[r, c, direction ] == True:
+                        totalWalls+=1
+        totalWalls=(totalWalls-(board_size*4))/2
+
+        if totalWalls==max_steps*2 or totalWalls==max_steps*2+1:
+            currentMove=0
+            return True
+        else: 
+            return False
+
+        
+
+
+        
+
+########helper methods for next moves
 
 def set_barrier(c_board, r, c, direction):
     """
@@ -282,8 +363,7 @@ def add_walls_to_position(state, r, c, my_pos, adv_pos):
 
 
 def get_next_states(state):
-    """
-    """
+
     global max_steps, moves, tree_depth
     next_states = []
     if state.turn == 0:
@@ -323,12 +403,9 @@ def get_next_states(state):
     return next_states
 
 
+
 @register_agent("student_agent")
 class StudentAgent(Agent):
-    """
-    A dummy class for your implementation. Feel free to use this class to
-    add any helper functionalities needed for your agent.
-    """
 
     def __init__(self):
         super(StudentAgent, self).__init__()
@@ -339,31 +416,23 @@ class StudentAgent(Agent):
             "d": 2,
             "l": 3,
         }
+        self.autoplay = True
 
     def step(self, chess_board, my_pos, adv_pos, max_step):
-        """
-        Implement the step function of your agent here.
-        You can use the following variables to access the chess board:
-        - chess_board: a numpy array of shape (x_max, y_max, 4)
-        - my_pos: a tuple of (x, y)
-        - adv_pos: a tuple of (x, y)
-        - max_step: an integer
-
-        You should return a tuple of ((x, y), dir),
-        where (x, y) is the next position of your agent and dir is the direction of the wall
-        you want to put on.
-
-        Please check the sample implementation in agents/random_agent.py or agents/human_agent.py for more details.
-        """
+        
+        start = time.time()
+        
         global max_steps, root, tree_depth
         max_steps = max_step
 
         cb_copy = deepcopy(chess_board)
         my_pos_copy = deepcopy(my_pos)
-        adv_pos_copy = deepcopy(adv_pos)
+        adv_pos_copy = deepcopy(adv_pos)   
 
         root = GameState(cb_copy, my_pos_copy, adv_pos_copy, 0, 0)
         state_queue = [root]
+        root.check_startgame()
+        setupTreeDepth(chess_board) 
 
         while state_queue:
             curr = state_queue.pop()
@@ -381,27 +450,23 @@ class StudentAgent(Agent):
                 else:
                     state_queue.append(s)
 
-        print("Turn: ",0," Our position is: ",my_pos_copy)
-        # print()
-        # print('state of tree before minimax... ')
-        # root.traverse_children()
-        # print()
-        # print("calculating ...", end="")
+     
         root.minimax()
-        #root.traverse_children()  # will show the tree after minimax
-        # print('state of tree after minimax... ')
         
         for child in root.children:
             if child.eval == root.eval:
             ## this is the best move
-                print("found the move")
                 ## look where we put the wall in that game state, chose that wall to put
                 for i in range(4):
-                    print(root.board[child.p0_pos[0],child.p0_pos[1],i],child.board[child.p0_pos[0],child.p0_pos[1],i])
 
                     if(root.board[child.p0_pos[0],child.p0_pos[1],i]!=child.board[child.p0_pos[0],child.p0_pos[1],i]):
-                        print("returned: ",child.p0_pos, i)
+                        # print("returned: ",child.p0_pos, i)
+                        end = time.time()
+                        if(end - start)>=2:
+                            print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
+                        else:
+                            print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
                         return child.p0_pos, i
 
-   
-        # return my_pos, self.dir_map["u"]
