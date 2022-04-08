@@ -75,6 +75,7 @@ def setupTreeDepth(chess_board):
             tree_depth=2
         else: #else
             tree_depth=3
+    
     elif boardSize==10:
         if currentMove < 10:
             tree_depth=1
