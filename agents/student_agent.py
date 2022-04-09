@@ -3,8 +3,8 @@ from copy import deepcopy
 from agents.agent import Agent
 from store import register_agent
 import numpy as np
-# import colorama
-# from colorama import Fore
+import colorama
+from colorama import Fore
 
 moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
@@ -49,9 +49,7 @@ def setupTreeDepth(chess_board):
             tree_depth=4
     
     elif boardSize==6:
-        if currentMove < 1:
-            tree_depth=1
-        elif currentMove < 8:
+        if currentMove < 8:
             tree_depth=2
         else:
             tree_depth=3
@@ -227,6 +225,7 @@ class GameState:
 
                 positions.append((pos[0]+moves[direction][0],pos[1]+moves[direction][1]))
         return positions
+
 
 
 
@@ -513,6 +512,7 @@ class StudentAgent(Agent):
 
      
         root.minimax()
+
         #print("children are:", root.getchildrenOf(root.p0_pos))
         # print("shortest distance to opp:",root.shortestDistanceToOpponent())
         
@@ -531,5 +531,13 @@ class StudentAgent(Agent):
                         # else:
                         #     print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
                         #     print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
+                        if(end - start)>=2:
+                            print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
+                            pass
+                        else:
+                            print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
+                            pass
                         return child.p0_pos, i
 
