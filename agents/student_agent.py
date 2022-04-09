@@ -3,8 +3,8 @@ from copy import deepcopy
 from agents.agent import Agent
 from store import register_agent
 import numpy as np
-import colorama
-from colorama import Fore
+# import colorama
+# from colorama import Fore
 
 moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
@@ -41,7 +41,7 @@ def setupTreeDepth(chess_board):
             tree_depth=6
     
     elif boardSize==5:
-        if currentMove <1:
+        if currentMove <3:
             tree_depth=2
         elif currentMove < 8: #first 8 moves 
             tree_depth=3
@@ -49,15 +49,17 @@ def setupTreeDepth(chess_board):
             tree_depth=4
     
     elif boardSize==6:
-        if currentMove < 4:
+        if currentMove < 1:
             tree_depth=1
-        elif currentMove < 5:
+        elif currentMove < 8:
             tree_depth=2
         else:
             tree_depth=3
     
     elif boardSize==7:
-        if currentMove < 15: #first  moves 
+        if currentMove < 1:
+            tree_depth=1
+        elif currentMove < 18: #first  moves 
             tree_depth=2
         else: #else
             tree_depth=3
@@ -127,7 +129,11 @@ class GameState:
             #     #then we just played, opponent should have a low number, so prioritize small numbers
             #     param2=-param2
              # use heuristic parameter optimizations:
-            self.eval =  param1*5
+            if len(self.board<8):
+                param3=self.shortestDistanceToOpponent()
+            else:
+                param3=0
+            self.eval =  param1*5+param3*2
 
     
     #return a tuple ( x, y) where x,y represents the absolute distance with respect the center in x and in y.
@@ -174,6 +180,56 @@ class GameState:
         param1=param1/maxDistance  ## for example if distance to center is 5 and maxdistance is 10 we returned -0.5
 
         return param1
+
+    def distanceToOpponent(self):
+        
+        boardx,boardy, _ = self.board.shape
+    
+        #our positoin
+        mex,mey= self.p0_pos
+
+        ##opponent
+        ox,oy= self.p1_pos
+
+        distance=abs(mex-ox)+abs(mey-oy)
+        distance= distance / ((boardx)*2)
+        
+        return -distance
+    
+    def shortestDistanceToOpponent(self):
+        visited=[]
+        visited.append(self.p0_pos)
+        ThisLevel=self.getchildrenOf(self.p0_pos)
+        distance=1
+        while ThisLevel:
+            nextLevel=[]
+            for child in ThisLevel:
+                if child == self.p1_pos:
+                    return -distance/(len(self.board)*2) #distance is shortest distance to node
+            #we visited every node in this level
+            visited=visited+ThisLevel
+
+            for child in ThisLevel:
+                potentialchildren= self.getchildrenOf(child)
+                ##check if they were already visisted:
+                for pc in potentialchildren:
+                    if pc not in visited:
+                        nextLevel.append(pc)
+            ThisLevel=nextLevel
+            distance+=1
+            
+
+
+    def getchildrenOf(self,pos):
+        positions=[]
+        for direction in range (4):
+            if self.board[pos[0], pos[1], direction ] == False:
+
+                positions.append((pos[0]+moves[direction][0],pos[1]+moves[direction][1]))
+        return positions
+
+
+
 
     def oppenentMoves(self)-> int:
         
@@ -457,6 +513,8 @@ class StudentAgent(Agent):
 
      
         root.minimax()
+        #print("children are:", root.getchildrenOf(root.p0_pos))
+        # print("shortest distance to opp:",root.shortestDistanceToOpponent())
         
         for child in root.children:
             if child.eval == root.eval:
@@ -467,11 +525,11 @@ class StudentAgent(Agent):
                     if(root.board[child.p0_pos[0],child.p0_pos[1],i]!=child.board[child.p0_pos[0],child.p0_pos[1],i]):
                         # print("returned: ",child.p0_pos, i)
                         end = time.time()
-                        if(end - start)>=2:
-                            print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                            print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
-                        else:
-                            print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                            print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
+                        # if(end - start)>=2:
+                        #     print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                        #     print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
+                        # else:
+                        #     print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                        #     print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
                         return child.p0_pos, i
 
