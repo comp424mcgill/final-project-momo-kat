@@ -3,8 +3,8 @@ from copy import deepcopy
 from agents.agent import Agent
 from store import register_agent
 import numpy as np
-import colorama
-from colorama import Fore
+# import colorama
+# from colorama import Fore
 
 moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
@@ -468,10 +468,12 @@ class StudentAgent(Agent):
                         # print("returned: ",child.p0_pos, i)
                         end = time.time()
                         if(end - start)>=2:
-                            print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                            print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
+                            # print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            # print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
+                            pass
                         else:
-                            print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                            print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
+                            # print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            # print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
+                            pass
                         return child.p0_pos, i
 
