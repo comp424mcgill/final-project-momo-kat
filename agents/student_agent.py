@@ -3,8 +3,8 @@ from copy import deepcopy
 from agents.agent import Agent
 from store import register_agent
 import numpy as np
-import colorama
-from colorama import Fore
+# import colorama
+# from colorama import Fore
 
 moves = [(-1, 0), (0, 1), (1, 0), (0, -1)]
 # Opposite Directions
@@ -69,7 +69,7 @@ def setupTreeDepth(chess_board):
             tree_depth=3
     
     elif boardSize==9:
-        if currentMove < 2:
+        if currentMove < 10:
             tree_depth=1
         elif currentMove < 40: #first  moves 
             tree_depth=2
@@ -525,19 +525,13 @@ class StudentAgent(Agent):
                     if(root.board[child.p0_pos[0],child.p0_pos[1],i]!=child.board[child.p0_pos[0],child.p0_pos[1],i]):
                         # print("returned: ",child.p0_pos, i)
                         end = time.time()
-                        # if(end - start)>=2:
-                        #     print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                        #     print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
-                        # else:
-                        #     print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                        #     print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
                         if(end - start)>=2:
-                            print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                            print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
+                            # print(Fore.RED+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            # print(Fore.RED+"Move",currentMove-1,"took time:",end - start)
                             pass
                         else:
-                            print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
-                            print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
+                            # print(Fore.WHITE+"tree depth:",tree_depth,",boardsize:", len(cb_copy))
+                            # print(Fore.WHITE+"Move",currentMove-1,"took time:",end - start)
                             pass
                         return child.p0_pos, i
 
